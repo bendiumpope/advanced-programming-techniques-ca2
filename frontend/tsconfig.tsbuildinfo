@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/vite-env.d.ts","./src/context/authcontext.tsx","./src/lib/crypto.ts","./src/lib/passwordgenerator.ts","./src/pages/dashboardlayout.tsx","./src/pages/generator.tsx","./src/pages/login.tsx","./src/pages/profile.tsx","./src/pages/register.tsx","./src/pages/vault.tsx"],"errors":true,"version":"5.9.3"}
