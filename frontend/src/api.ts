@@ -10,6 +10,7 @@ export type User = {
   id: number;
   email: string;
   vault_salt: string;
+  has_avatar?: boolean;
 };
 
 export async function registerRequest(
@@ -116,4 +117,27 @@ export async function deleteEntry(token: string, id: number): Promise<void> {
     const data = await res.json().catch(() => ({}));
     throw new Error((data as { error?: string }).error || "Failed to delete");
   }
+}
+
+export async function uploadAvatar(token: string, file: File): Promise<User> {
+  const body = new FormData();
+  body.append("file", file);
+  const res = await fetch(`${API_BASE}/profile/avatar`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error || "Upload failed");
+  return (data as { user: User }).user;
+}
+
+export async function deleteAvatar(token: string): Promise<User> {
+  const res = await fetch(`${API_BASE}/profile/avatar`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error || "Remove failed");
+  return (data as { user: User }).user;
 }

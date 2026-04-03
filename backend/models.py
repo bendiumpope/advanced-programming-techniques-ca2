@@ -16,6 +16,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     vault_salt = db.Column(db.String(64), nullable=False)
+    avatar_filename = db.Column(db.String(512), nullable=True)
     created_at = db.Column(db.DateTime, default=utcnow, nullable=False)
 
     entries = db.relationship(

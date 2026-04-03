@@ -12,6 +12,15 @@ auth_bp = Blueprint("auth", __name__)
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
+def _user_json(user):
+    return {
+        "id": user.id,
+        "email": user.email,
+        "vault_salt": user.vault_salt,
+        "has_avatar": bool(user.avatar_filename),
+    }
+
+
 @auth_bp.post("/register")
 def register():
     data = request.get_json(silent=True) or {}
@@ -39,7 +48,7 @@ def register():
         jsonify(
             {
                 "access_token": token,
-                "user": {"id": user.id, "email": user.email, "vault_salt": user.vault_salt},
+                "user": _user_json(user),
             }
         ),
         201,
@@ -60,7 +69,7 @@ def login():
     return jsonify(
         {
             "access_token": token,
-            "user": {"id": user.id, "email": user.email, "vault_salt": user.vault_salt},
+            "user": _user_json(user),
         }
     )
 
@@ -72,4 +81,4 @@ def me():
     user = db.session.get(User, uid)
     if not user:
         return jsonify({"error": "User not found"}), 404
-    return jsonify({"id": user.id, "email": user.email, "vault_salt": user.vault_salt})
+    return jsonify(_user_json(user))

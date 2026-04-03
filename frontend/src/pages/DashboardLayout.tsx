@@ -1,14 +1,23 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useAvatarUrl } from "../hooks/useAvatarUrl";
 
 export function DashboardLayout() {
-  const { logout, user } = useAuth();
+  const { logout, user, token } = useAuth();
+  const sidebarAvatar = useAvatarUrl(token, user?.has_avatar, 0);
+  const initial = (user?.email ?? "?").slice(0, 1).toUpperCase();
 
   return (
     <div className="dashboard">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="brand-mark" aria-hidden />
+          {sidebarAvatar ? (
+            <img src={sidebarAvatar} alt="" className="sidebar-avatar" />
+          ) : (
+            <span className="brand-mark sidebar-avatar-fallback" aria-hidden>
+              {initial}
+            </span>
+          )}
           <div>
             <strong>Secure Vault</strong>
             <div className="muted small">{user?.email}</div>

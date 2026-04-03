@@ -5,9 +5,16 @@ import {
   useEffect,
   useMemo,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
-import { loginRequest, meRequest, registerRequest, type User } from "../api";
+import {
+  loginRequest,
+  meRequest,
+  registerRequest,
+  type User,
+} from "../api";
 
 const TOKEN_KEY = "pm_access_token";
 const MASTER_KEY = "pm_master_session";
@@ -23,6 +30,8 @@ type AuthContextValue = AuthState & {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
+  setUser: Dispatch<SetStateAction<User | null>>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -93,6 +102,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMasterPassword(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
+    try {
+      const u = await meRequest(token);
+      setUser(u);
+    } catch {
+      logout();
+    }
+  }, [token, logout]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       token,
@@ -102,8 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
+      setUser,
     }),
-    [token, user, masterPassword, ready, login, register, logout]
+    [token, user, masterPassword, ready, login, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

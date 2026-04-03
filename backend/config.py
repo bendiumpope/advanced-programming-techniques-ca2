@@ -14,3 +14,6 @@ class Config:
         f"sqlite:///{INSTANCE_PATH / 'app.db'}",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Profile pictures: stored under INSTANCE_PATH / "avatars"
+    MAX_AVATAR_BYTES = int(os.environ.get("MAX_AVATAR_BYTES", 2 * 1024 * 1024))
