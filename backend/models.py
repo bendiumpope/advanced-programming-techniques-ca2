@@ -33,6 +33,7 @@ class VaultEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     title = db.Column(db.String(512), nullable=False, default="")
+    folder = db.Column(db.String(128), nullable=False, default="")
     url = db.Column(db.String(2048), nullable=True)
     encrypted_payload = db.Column(db.Text, nullable=False)
     iv = db.Column(db.String(64), nullable=False)

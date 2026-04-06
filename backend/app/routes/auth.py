@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from extensions import limiter
 from models import User, db
 
 auth_bp = Blueprint("auth", __name__)
@@ -22,6 +23,7 @@ def _user_json(user):
 
 
 @auth_bp.post("/register")
+@limiter.limit("5 per minute")
 def register():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()
@@ -56,6 +58,7 @@ def register():
 
 
 @auth_bp.post("/login")
+@limiter.limit("15 per minute")
 def login():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()

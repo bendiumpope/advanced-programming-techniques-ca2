@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { copyWithAutoClear, CLIPBOARD_CLEAR_AFTER_MS } from "../lib/clipboard";
 import { generatePassword, type GeneratorOptions } from "../lib/passwordGenerator";
 
 const defaultOpts: GeneratorOptions = {
@@ -23,7 +24,7 @@ export function Generator() {
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(out);
+      await copyWithAutoClear(out, "generator");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -43,14 +44,18 @@ export function Generator() {
           <code className="gen-password mono" title={out}>
             {out}
           </code>
-          <div className="gen-actions">
-            <button type="button" className="btn btn-primary" onClick={regenerate}>
-              Regenerate
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={copy}>
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
+        <div className="gen-actions">
+          <button type="button" className="btn btn-primary" onClick={regenerate}>
+            Regenerate
+          </button>
+          <button type="button" className="btn btn-ghost" onClick={copy}>
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+        <p className="muted small gen-clipboard-hint">
+          After copy, we try to clear the clipboard in {CLIPBOARD_CLEAR_AFTER_MS / 1000}s (may be
+          blocked by the browser).
+        </p>
         </div>
         <p className={`strength strength-${strength.label}`}>
           Strength: <strong>{strength.label}</strong> ({out.length} chars)

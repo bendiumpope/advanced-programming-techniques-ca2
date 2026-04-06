@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager
 from sqlalchemy import inspect, text
 
 from config import Config
+from extensions import limiter
 from models import db
 
 
@@ -26,6 +27,21 @@ def _ensure_user_avatar_column(app):
             )
 
 
+def _ensure_vault_entry_folder_column(app):
+    """Add folder to vault_entries for existing SQLite DBs."""
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if "vault_entries" not in inspector.get_table_names():
+            return
+        cols = {c["name"] for c in inspector.get_columns("vault_entries")}
+        if "folder" in cols:
+            return
+        with db.engine.begin() as conn:
+            conn.execute(
+                text("ALTER TABLE vault_entries ADD COLUMN folder VARCHAR(128) DEFAULT ''")
+            )
+
+
 def create_app(config_class=Config):
     load_dotenv()
     app = Flask(__name__)
@@ -35,6 +51,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     JWTManager(app)
+    limiter.init_app(app)
 
     CORS(
         app,
@@ -53,5 +70,6 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
         _ensure_user_avatar_column(app)
+        _ensure_vault_entry_folder_column(app)
 
     return app

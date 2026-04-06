@@ -561,3 +561,68 @@ input[type="range"] {
   margin: 0;
   max-width: 280px;
 }
+
+.vault-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.vault-search {
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+.vault-folder-filter {
+  flex: 0 1 200px;
+  min-width: 160px;
+}
+
+.vault-folder-filter select {
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+}
+
+.vault-clipboard-hint {
+  margin: 0 0 1rem;
+}
+
+.health-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.health-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+}
+
+.health-pill-weak {
+  background: rgba(230, 180, 34, 0.2);
+  color: #e6b422;
+}
+
+.health-pill-reused {
+  background: rgba(255, 69, 58, 0.15);
+  color: var(--danger);
+}
+
+.modal-wide {
+  max-width: 480px;
+}
+
+.gen-clipboard-hint {
+  margin: 0.75rem 0 0;
+}

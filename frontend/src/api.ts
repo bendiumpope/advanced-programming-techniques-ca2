@@ -53,6 +53,7 @@ export async function meRequest(token: string): Promise<User> {
 export type VaultEntryDto = {
   id: number;
   title: string;
+  folder: string;
   url: string | null;
   encrypted_payload: string;
   iv: string;
@@ -73,6 +74,7 @@ export async function createEntry(
   token: string,
   body: {
     title: string;
+    folder?: string;
     url?: string | null;
     encrypted_payload: string;
     iv: string;
@@ -93,6 +95,7 @@ export async function updateEntry(
   id: number,
   body: Partial<{
     title: string;
+    folder: string;
     url: string | null;
     encrypted_payload: string;
     iv: string;

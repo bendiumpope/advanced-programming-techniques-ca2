@@ -26,6 +26,7 @@ function base64ToBytes(b64: string): Uint8Array {
 
 export type SecretPayload = {
   password: string;
+  username?: string;
   notes?: string;
 };
 

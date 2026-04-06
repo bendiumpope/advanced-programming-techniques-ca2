@@ -14,8 +14,8 @@ Flask REST API with SQLite (SQLAlchemy) and JWT auth.
 
 | Prefix | File | Endpoints |
 | --- | --- | --- |
-| `/api/auth` | [`app/routes/auth.py`](app/routes/auth.py) | `POST /register`, `POST /login`, `GET /me` (JWT) |
-| `/api/vault` | [`app/routes/vault.py`](app/routes/vault.py) | `GET`/`POST /entries, `GET`/`PUT`/`DELETE /entries/<id>` (scoped by JWT user) |
+| `/api/auth` | [`app/routes/auth.py`](app/routes/auth.py) | `POST /register`, `POST /login`, `GET /me` (JWT). **Rate limits** (per IP, in-memory): register **5/min**, login **15/min** via [`extensions.py`](extensions.py) + Flask-Limiter. |
+| `/api/vault` | [`app/routes/vault.py`](app/routes/vault.py) | `GET`/`POST /entries`, `GET`/`PUT`/`DELETE /entries/<id>` (scoped by JWT user). Each entry has plaintext **folder** (for organization/search); **username** is stored only inside the client-encrypted payload. |
 | `/api/profile` | [`app/routes/profile.py`](app/routes/profile.py) | `GET`/`POST`/`DELETE /avatar` — profile picture (JWT) |
 
 Vault ciphertext is produced by the client; the API stores opaque blobs only.

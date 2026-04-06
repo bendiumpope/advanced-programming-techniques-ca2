@@ -5,9 +5,33 @@ from models import VaultEntry, db
 
 vault_bp = Blueprint("vault", __name__)
 
+MAX_FOLDER_LEN = 128
+
 
 def _current_user_id():
     return int(get_jwt_identity())
+
+
+def _normalize_folder(raw):
+    if raw is None:
+        return ""
+    s = (raw or "").strip()
+    if len(s) > MAX_FOLDER_LEN:
+        s = s[:MAX_FOLDER_LEN]
+    return s
+
+
+def _entry_dict(e):
+    return {
+        "id": e.id,
+        "title": e.title,
+        "folder": e.folder or "",
+        "url": e.url,
+        "encrypted_payload": e.encrypted_payload,
+        "iv": e.iv,
+        "created_at": e.created_at.isoformat(),
+        "updated_at": e.updated_at.isoformat(),
+    }
 
 
 @vault_bp.get("/entries")
@@ -19,22 +43,7 @@ def list_entries():
         .order_by(VaultEntry.updated_at.desc())
         .all()
     )
-    return jsonify(
-        {
-            "entries": [
-                {
-                    "id": e.id,
-                    "title": e.title,
-                    "url": e.url,
-                    "encrypted_payload": e.encrypted_payload,
-                    "iv": e.iv,
-                    "created_at": e.created_at.isoformat(),
-                    "updated_at": e.updated_at.isoformat(),
-                }
-                for e in entries
-            ]
-        }
-    )
+    return jsonify({"entries": [_entry_dict(e) for e in entries]})
 
 
 @vault_bp.post("/entries")
@@ -46,6 +55,7 @@ def create_entry():
     url = data.get("url")
     if url is not None:
         url = (url or "").strip() or None
+    folder = _normalize_folder(data.get("folder"))
     encrypted_payload = data.get("encrypted_payload")
     iv = data.get("iv")
 
@@ -57,28 +67,14 @@ def create_entry():
     entry = VaultEntry(
         user_id=uid,
         title=title,
+        folder=folder,
         url=url,
         encrypted_payload=encrypted_payload,
         iv=iv,
     )
     db.session.add(entry)
     db.session.commit()
-    return (
-        jsonify(
-            {
-                "entry": {
-                    "id": entry.id,
-                    "title": entry.title,
-                    "url": entry.url,
-                    "encrypted_payload": entry.encrypted_payload,
-                    "iv": entry.iv,
-                    "created_at": entry.created_at.isoformat(),
-                    "updated_at": entry.updated_at.isoformat(),
-                }
-            }
-        ),
-        201,
-    )
+    return jsonify({"entry": _entry_dict(entry)}), 201
 
 
 @vault_bp.get("/entries/<int:entry_id>")
@@ -88,19 +84,7 @@ def get_entry(entry_id):
     entry = VaultEntry.query.filter_by(id=entry_id, user_id=uid).first()
     if not entry:
         return jsonify({"error": "Not found"}), 404
-    return jsonify(
-        {
-            "entry": {
-                "id": entry.id,
-                "title": entry.title,
-                "url": entry.url,
-                "encrypted_payload": entry.encrypted_payload,
-                "iv": entry.iv,
-                "created_at": entry.created_at.isoformat(),
-                "updated_at": entry.updated_at.isoformat(),
-            }
-        }
-    )
+    return jsonify({"entry": _entry_dict(entry)})
 
 
 @vault_bp.put("/entries/<int:entry_id>")
@@ -117,6 +101,8 @@ def update_entry(entry_id):
         if not title:
             return jsonify({"error": "Title cannot be empty"}), 400
         entry.title = title
+    if "folder" in data:
+        entry.folder = _normalize_folder(data.get("folder"))
     if "url" in data:
         u = data.get("url")
         entry.url = (u or "").strip() or None if u is not None else None
@@ -126,19 +112,7 @@ def update_entry(entry_id):
         entry.iv = data["iv"]
 
     db.session.commit()
-    return jsonify(
-        {
-            "entry": {
-                "id": entry.id,
-                "title": entry.title,
-                "url": entry.url,
-                "encrypted_payload": entry.encrypted_payload,
-                "iv": entry.iv,
-                "created_at": entry.created_at.isoformat(),
-                "updated_at": entry.updated_at.isoformat(),
-            }
-        }
-    )
+    return jsonify({"entry": _entry_dict(entry)})
 
 
 @vault_bp.delete("/entries/<int:entry_id>")
