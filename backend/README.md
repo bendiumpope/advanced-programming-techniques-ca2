@@ -38,6 +38,12 @@ pip install -r requirements.txt
 python run.py
 ```
 
+## To Run Test
+
+```bash
+cd backend
+python -m pytest tests/ -v
+```
 - Default URL: **http://127.0.0.1:5001** (port **5001** avoids macOS often reserving **5000** for AirPlay).
 - Override with `PORT`, e.g. `PORT=5001 python run.py`.
 
