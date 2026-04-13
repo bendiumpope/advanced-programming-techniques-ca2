@@ -276,8 +276,11 @@ textarea {
   text-decoration: none;
 }
 
-.sidebar-logout {
+.sidebar-actions {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .main-area {
