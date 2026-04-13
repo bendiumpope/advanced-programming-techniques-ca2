@@ -17,7 +17,6 @@ import {
 } from "../api";
 
 const TOKEN_KEY = "pm_access_token";
-const MASTER_KEY = "pm_master_session";
 
 type AuthState = {
   token: string | null;
@@ -30,6 +29,9 @@ type AuthContextValue = AuthState & {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  /** Keep master password only in memory — not sessionStorage — to reduce XSS / storage exposure. */
+  unlockVault: (masterPassword: string) => void;
+  lockVault: () => void;
   refreshUser: () => Promise<void>;
   setUser: Dispatch<SetStateAction<User | null>>;
 };
@@ -41,9 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null
   );
   const [user, setUser] = useState<User | null>(null);
-  const [masterPassword, setMasterPassword] = useState<string | null>(() =>
-    typeof window !== "undefined" ? sessionStorage.getItem(MASTER_KEY) : null
-  );
+  const [masterPassword, setMasterPassword] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -52,7 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!token) {
         setUser(null);
         setMasterPassword(null);
-        sessionStorage.removeItem(MASTER_KEY);
         setReady(true);
         return;
       }
@@ -63,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setToken(null);
           localStorage.removeItem(TOKEN_KEY);
-          sessionStorage.removeItem(MASTER_KEY);
           setUser(null);
           setMasterPassword(null);
         }
@@ -79,7 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const { access_token, user: u } = await loginRequest(email, password);
     localStorage.setItem(TOKEN_KEY, access_token);
-    sessionStorage.setItem(MASTER_KEY, password);
     setToken(access_token);
     setUser(u);
     setMasterPassword(password);
@@ -88,15 +85,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (email: string, password: string) => {
     const { access_token, user: u } = await registerRequest(email, password);
     localStorage.setItem(TOKEN_KEY, access_token);
-    sessionStorage.setItem(MASTER_KEY, password);
     setToken(access_token);
     setUser(u);
     setMasterPassword(password);
   }, []);
 
+  const unlockVault = useCallback((password: string) => {
+    setMasterPassword(password);
+  }, []);
+
+  const lockVault = useCallback(() => {
+    setMasterPassword(null);
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(MASTER_KEY);
     setToken(null);
     setUser(null);
     setMasterPassword(null);
@@ -121,10 +124,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      unlockVault,
+      lockVault,
       refreshUser,
       setUser,
     }),
-    [token, user, masterPassword, ready, login, register, logout, refreshUser]
+    [
+      token,
+      user,
+      masterPassword,
+      ready,
+      login,
+      register,
+      logout,
+      unlockVault,
+      lockVault,
+      refreshUser,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

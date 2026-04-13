@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAvatarUrl } from "../hooks/useAvatarUrl";
 
 export function DashboardLayout() {
-  const { logout, user, token } = useAuth();
+  const { logout, user, token, masterPassword, lockVault } = useAuth();
   const sidebarAvatar = useAvatarUrl(token, user?.has_avatar, 0);
   const initial = (user?.email ?? "?").slice(0, 1).toUpperCase();
 
@@ -43,9 +43,16 @@ export function DashboardLayout() {
             Profile
           </NavLink>
         </nav>
-        <button type="button" className="btn btn-ghost sidebar-logout" onClick={logout}>
-          Sign out
-        </button>
+        <div className="sidebar-actions">
+          {masterPassword ? (
+            <button type="button" className="btn btn-ghost" onClick={lockVault}>
+              Lock vault
+            </button>
+          ) : null}
+          <button type="button" className="btn btn-ghost" onClick={logout}>
+            Sign out
+          </button>
+        </div>
       </aside>
       <main className="main-area">
         <Outlet />

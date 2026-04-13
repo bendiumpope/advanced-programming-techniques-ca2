@@ -23,7 +23,9 @@ function normalizeEntryDto(e: VaultEntryDto): VaultEntryDto {
 }
 
 export function Vault() {
-  const { token, user, masterPassword } = useAuth();
+  const { token, user, masterPassword, unlockVault } = useAuth();
+  const [unlockPwd, setUnlockPwd] = useState("");
+  const [unlockErr, setUnlockErr] = useState<string | null>(null);
   const [rows, setRows] = useState<DecryptedRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,10 +112,52 @@ export function Vault() {
     }
   }
 
-  if (!masterPassword || !user) {
+  if (!user) {
     return (
       <div className="page">
-        <p className="muted">Unlock your vault by signing in again.</p>
+        <p className="muted">Loading…</p>
+      </div>
+    );
+  }
+
+  if (!masterPassword) {
+    function onUnlock(e: FormEvent) {
+      e.preventDefault();
+      const p = unlockPwd.trim();
+      if (!p) {
+        setUnlockErr("Password is required");
+        return;
+      }
+      setUnlockErr(null);
+      unlockVault(p);
+      setUnlockPwd("");
+    }
+
+    return (
+      <div className="page">
+        <header className="page-header">
+          <h1>Unlock vault</h1>
+          <p className="muted">
+            Your master password stays in memory only for this tab session. After a refresh, enter it again
+            here — it is not stored in the browser&apos;s storage.
+          </p>
+        </header>
+        <form onSubmit={onUnlock} className="auth-form vault-unlock-form">
+          <label className="field">
+            <span>Master password</span>
+            <input
+              type="password"
+              autoComplete="off"
+              value={unlockPwd}
+              onChange={(e) => setUnlockPwd(e.target.value)}
+              required
+            />
+          </label>
+          {unlockErr && <p className="form-error">{unlockErr}</p>}
+          <button type="submit" className="btn btn-primary">
+            Unlock
+          </button>
+        </form>
       </div>
     );
   }

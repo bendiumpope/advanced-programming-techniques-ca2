@@ -11,7 +11,7 @@ Vite + React + TypeScript SPA for the password manager.
 
 ## Key files
 
-- **Auth** — [`src/context/AuthContext.tsx`](src/context/AuthContext.tsx): JWT in `localStorage`; master password in `sessionStorage` for the tab (refresh still decrypts until the tab closes).
+- **Auth** — [`src/context/AuthContext.tsx`](src/context/AuthContext.tsx): JWT in `localStorage`; master password only in memory — after refresh, use **Unlock vault** on the vault page (not stored in `sessionStorage`).
 - **Crypto** — [`src/lib/crypto.ts`](src/lib/crypto.ts): PBKDF2 (120k iterations) + AES-GCM; only ciphertext + IV are sent to the server.
 - **API client** — [`src/api.ts`](src/api.ts).
 - **Pages** — Login, Register, dashboard with sidebar: **Secure passwords**, **Password generator**, **Profile**.
